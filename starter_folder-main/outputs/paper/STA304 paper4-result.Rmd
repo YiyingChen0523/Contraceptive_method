@@ -1,0 +1,488 @@
+---
+title: "Liberian Women Modern Contraceptive Use in 1986 and Its Influencing Social Factors"
+author: 
+- Yiying Chen
+- Jennifer Liu
+- Zhiyi Liu
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+abstract: "This paper mainly investigates how various social backgrounds of Liberian
+  women affect their use of contraceptive methods. By data analysis, we conclude that
+  age, level of education, number of current living children and tribes largely influence
+  people’ use of birth control. As a rising social issue, helping more people to realize
+  the importance of modern contraception was a necessary step toward population control.
+  From the result of this paper, we could identify groups of individuals that need
+  more education on modern contraception and make relevant public policies to tackle
+  this problem."
+thanks: "Code and data avaliable at https://github.com/YiyingChen0523/Contraceptive_method.git"
+toc: no
+bibliography: ref.bib
+---
+
+\newpage
+# Introduction
+The use of birth control plays a main role in women’s decision of whether to have a child or not. The topic is essential for women’s body autonomy with the rise of feminism worldwide. The method of contraceptives directly affects the effectiveness of avoiding pregnancy. Countries under development often face rapid changes in beliefs and practices. Liberia, one of the oldest republics in Africa, was studied to see the use of contraceptives among women and the percentage of methods considered modern. The study also collects data on respondents' information on social factors. 
+
+The  Liberia Demographic and Health Survey (LDHS) was conducted on a national-level in 1986. The purpose of the survey was to give policymakers information regarding family planning and maternal health in the country of Liberia. The research was conducted in the format of survey, collecting data from a sample of 5,239 women aged from 15 to 49. Respondents are required to answer questions related to fertility, family planning, and maternal and child health [@paper].
+
+The paper examines the use of contraceptives among each subgroup of age,  and the proportion of modern contraceptive methods among all methods. We see that each group had a different percentage use of birth control and modern methods of birth control. We found that age factors contributed to a bimodal distribution of percentage of that group who is using contraceptives. The use was lowest for the age group 15-19. The percentage peaked with groups 25-29 and 45-49. For the number of children a woman has, more children is correlated with higher use of birth controls. A notable finding is that among all women who use contraceptives and do not have any children use modern methods, which might imply the effectiveness of modern contraceptives. Education level is also a social factor that exhibited increasing use of birth control as education level rises. Lastly, tribes in Liberia that have low use of contraceptives are Bassa, Gio and Gola. High-use tribes include Grebe, Kru/Sapo and Lorma. Among all the tribes, both Gola and Mandigo do not use any traditional methods. 
+
+The paper begins with the data section, including information on the source of data, sampling method, data collection and data characteristics. The results section displays the exact percentages among social groups. The paper divides the factors into age, number of living children, education level and the tribes. The discussion section provides deeper explanation and potential reasoning behind the results, along with limitations of the paper.
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+library(janitor)
+library(pdftools)
+library(purrr)
+library(tidyverse)
+library(stringi)
+library(knitr)
+library(tinytex)
+```
+
+# Data
+This report is analyzed using R [@r], using tidyverse [@tidyverse] and dplyr [@dplyr] packages. All the tables and graphs are created using ggplot2 [@ggplot] and the file is knitted using knitr [@knitr]. The package janitor [@janitor], pdftools[@pdf], purrr[@purrr] are also used.
+
+## Data Source
+This data is taken from the Liberia Demographic and Health Survey (LDHS) in 1986 and was implemented by the Ministry of Planning and Economic Affairs and the Institute for Resource Development. It was part of the worldwide Demographic and Health Surveys Programme (DHS) that aims to collect data on fertility, family planning, and maternal and child health. It has collected and analyzed over 400 surveys in more than 90 countries [@paper].  
+
+```{r fig.align="center", fig.cap=c(), echo=FALSE}
+knitr::include_graphics("/Users/chenyiying/Desktop/starter_folder-main/outputs/materials/figure.pdf")
+```
+
+\newpage
+
+The 1986 LDHS report is found to be in pdf format (Table 1)  and in order to analyze it using R, page 44 has been converted into a table for analysis purposes. 
+
+## Sampling
+The survey has been oversampled as it also uses data collected in Sinoe and the Grand Gedeh Counties. Over 4500 enumeration areas were created based on the 1984 Population Census and 156 enumeration areas are covered in the census. They were selected with a probability proportional  to the geographical size. EAs that were more than 3-4 hours away from a road were removed as they represent less than 3 percent of the total number of households. All households are then listed from the 156 enumeration areas and then sampled. 
+
+6006 households were selected for an interview, but only 5609 households were found due to factors such as the house has been emptied or destroyed. Out of the 5206 households that were found were interviewed, with a response rate of 90%. Out of these households, 5240 women were identified to be eligible and 98% were interviewed. They need to be between 15-49 years old and stayed in the households the night before. 
+
+## Collection 
+LDHS uses two questions, one to list all the members of selected households and the other one to collect information needed. The field staff are all female and consist of 24 interviewers, where training was given. Data was collected from late February to July 1986 and then manually computed onto microcomputers at the Bureau of Statistics Office. Errors found in the microdata are resolved by referring to the questionnaire or by logic using other information given.  Data quality remained uncertain as there is information that is undisclosed; only 42% gave the birth date. 
+
+## Data Characteristics
+The data distribution of the sample women is representative to the country's data collected in the 1974 census with two minor differences. The percentage of LDHS respondents in the 25-29 and 45-49 groups is higher than the census' proportion (17.7 % in 1974 census compared to 20.6% for 25-29). Moreover, there were only 28.5% of women living in urban areas in the 1974 census, compared to 43.2% for the survey. 
+
+Modern method of contraceptives refers to the use of pill, IDD, injection, vaginal methods, condom, female and male sterilization. Pill is the most used modern method among women and male sterilization is the less commonly used method. 
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+setwd("/Users/chenyiying/Desktop")
+all_content <- pdf_text("FR22.pdf")
+just_page_i <- stri_split_lines(all_content[[59]])[[1]]
+just_page_i <- just_page_i[just_page_i != ""]
+just_page_i
+```
+
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+type_of_table <- just_page_i[1:4] |> str_squish()
+type_of_table #save the heading of the table
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE} 
+just_page_i_no_header <- just_page_i[5:length(just_page_i)]
+just_page_i_no_header_no_footer <- just_page_i_no_header[3:29] 
+just_page_i_no_header_no_footer #remove header and footer for the table, keep the data we need to analyze 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+contraception_data <- tibble(all = just_page_i_no_header_no_footer)
+contraception_data #convert the data into a tibble 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+contraception_data <-
+  contraception_data |>
+  mutate(all = str_squish(all)) |> 
+  mutate(all = str_replace(all, "II.3", "11.3")) |> 
+  mutate(all = str_replace(all, "I I .6", "11.6")) |>
+  mutate(all = str_replace(all, "II.4", "11.4")) |>
+  mutate(all = str_replace(all, "4,8", "4.8")) |>
+  mutate(all = str_replace(all, "7,3", "7.3")) |>
+  mutate(all = str_replace(all, "6,4", "6.4")) |>
+  mutate(all = str_replace(all, "No schooling", "No_Schooling")) |>
+  mutate(all = str_replace(all, "Secondary or more", "Secondary_or_more")) |>
+  mutate(all = str_replace(all, "6 or more", "6_or_more")) |>
+  mutate(all = str_replace(all, "Livinq Children", "Living_Children")) |>
+  mutate(all = str_replace(all, "R~liqion", "Religion")) |>
+  mutate(all = str_replace(all, "Rest of country", "Rest_of_country")) |>
+  mutate(all = str_replace(all, "Aqe", "Age")) |> #Correct details in the table that R could not recognize
+  
+  separate(col = all,
+           into = c("Characteristic", "Any_Method", "Any_Mordern_Method", "Characteristic_2", "Any_Method_2", "Any_Mordern_Method_2"),
+           sep = " ", 
+           remove = TRUE,
+           fill = "right",
+           extra = "drop"
+  ) #rename the column for lay out
+contraception_data
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+contraception_data_long <-
+  rbind(contraception_data |> select(Characteristic, Any_Method, Any_Mordern_Method),
+        contraception_data |>
+          select(Characteristic_2, Any_Method_2, Any_Mordern_Method_2) |>
+          rename(Characteristic = Characteristic_2, Any_Method = Any_Method_2, Any_Mordern_Method = Any_Mordern_Method_2)
+  )
+contraception_data_long
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+contraception_data_long <- 
+  contraception_data_long |> 
+  remove_empty(which = c("rows"))
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data <- 
+  contraception_data_long[-c(17, 21),]
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data[1,2] <- ""
+new_data[17,2] <- ""
+new_data[17,3] <- ""
+new_data[20,2] <- ""
+new_data[20,3] <- ""
+new_data[22,2] <- "3"
+new_data[22,3] <- "2.9"
+new_data[31,1] <- "Traditional/Other"
+new_data[31,2] <- "3.7"
+new_data[31,3] <- "3.1"
+new_data[38,1] <- "Kru/Sapo"
+new_data[38,2] <- "11.3"
+new_data[38,3] <- "10.7"
+new_data[41,1] <- "Mano"
+new_data[41,2] <- "6.3"
+new_data[41,3] <- "5.4"
+new_data[42,1] <- "Other/None"
+new_data[42,2] <- "9.6"
+new_data[42,3] <- "7.2"
+new_data[34,3] <- "3.3"
+new_data[39,1] <- "Mandingo"
+new_data[39,2] <- "1.5"
+new_data[39,3] <- "1.5"
+new_data
+```
+
+# Result
+In this session, we divide the original table into sub-session to do a deeper analysis and conclude what are the factors that could largely affect people’ use of contraceptive methods. The percentage currently using contraceptive methods varies a lot under different contexts. People who obtain specific features will obviously prefer using contraceptive methods or not. Overall, we select four features that could mostly represent the background information of an individual to analyze their choices of using contraceptive methods [@paper]. 
+
+## Age 
+The first factor was age, which was the one that could largely represent the fertility of individuals. From the trend of the data, we could see that people between the ages of 45-49 have the largest portion of people using modern contraceptive methods. They tend to have a stable living condition and control accidental pregnancies. The second age group that mostly used modern contraceptive methods was people between 25-29. Compared to younger groups, they have a better awareness of birth control and they know the scientific method. Conversely, for people between 15-19 years old, only 2% of them use modern contraceptive methods (Table 1).
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data_age <- new_data[2:8,]
+colnames(new_data_age) <- c("Age", "Any_Method", "Any_Mordern_Method") 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+age <- new_data_age %>% mutate(Any_Mordern_Method = as.numeric(Any_Mordern_Method))
+```
+
+```{r, echo=FALSE, message=FALSE}
+summary_age <- age %>% summarise(min = min(Any_Mordern_Method),
+                                  Q1 = quantile(Any_Mordern_Method,0.25),
+                                  median = median(Any_Mordern_Method),
+                                  Q3 = quantile(Any_Mordern_Method,0.75),
+                                  max = max(Any_Mordern_Method),
+                                  IQR = Q3 - Q1,
+                                  mean = mean(Any_Mordern_Method), 
+                                  sd = sd(Any_Mordern_Method), 
+                                  Small_Outliers = sum(Any_Mordern_Method < Q1 - 1.5*IQR),
+                                  Large_Outliers = sum(Any_Mordern_Method > Q3 + 1.5*IQR))
+knitr::kable(age, caption = "Summary By Age")
+```
+
+```{r fig.align="center", fig.cap=c(), echo=FALSE} 
+age %>% ggplot(aes(x = Age, y = Any_Mordern_Method)) + geom_point() + theme_classic()+
+  labs(x = "Age Group", y = "Percentage of Using Modern Contraceptive Method", title = "Figure1: Percentage of Using Modern Contraceptive Method by Age")
+```
+
+## Living Children 
+Then, the current number of children was also a key factor for people to decide whether to use contraceptive methods. Most families prefer using modern contraceptive methods mostly. The distribution is left-skewed, indicating that people tend to use more contraceptives once they have more children. The peak is at when people have 4 children, 9.7% of the population in that group uses contraceptives and 7.3% uses modern methods (Table 2). The distribution of people who use modern methods also follows the same distribution of all methods. It makes sense because it is included in the any methods category (Figure 2).
+
+\newpage
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data_children <- new_data[11:16,]
+colnames(new_data_children) <- c("Living_Children", "Any_Method", "Any_Mordern_Method") 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+children <- new_data_children %>% mutate(Any_Mordern_Method = as.numeric(Any_Mordern_Method))
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+summary_children <- children %>% summarise(min = min(Any_Mordern_Method),
+                                  Q1 = quantile(Any_Mordern_Method,0.25),
+                                  median = median(Any_Mordern_Method),
+                                  Q3 = quantile(Any_Mordern_Method,0.75),
+                                  max = max(Any_Mordern_Method),
+                                  IQR = Q3 - Q1,
+                                  mean = mean(Any_Mordern_Method), 
+                                  sd = sd(Any_Mordern_Method), 
+                                  Small_Outliers = sum(Any_Mordern_Method < Q1 - 1.5*IQR),
+                                  Large_Outliers = sum(Any_Mordern_Method > Q3 + 1.5*IQR))
+knitr::kable(children, caption = "Summary By Living Children")
+```
+
+
+```{r fig.align="center", fig.cap=c(), echo=FALSE}
+children %>% filter(!is.na(Any_Mordern_Method)) %>% ggplot(aes(x = Living_Children, y = Any_Mordern_Method)) + geom_point() + theme_classic()+
+  labs(x = "Number of Living Children", y = "Percentage of Using Modern Contraceptive Method", title = "Figure 2: Percentage of Modern Method by Number of Children")
+```
+
+## Education
+Furthermore, education was the factor that could affect people’ decision on using contraception, which requires knowledge for effective birth control. The educational level was a clear criterion of reflecting. By the scatterplot, we could see a very clear trend on how the usage of contraceptive methods varies with respondents’ level of education. Individuals that received secondary education or more are obviously more willing to use modern contraceptive methods; over 20% of them used contraceptive methods (Table 3). There was a significant gap between secondary education and other educational levels. 
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data_edu <- new_data[26:28,]
+colnames(new_data_edu) <- c("Education", "Any_Method", "Any_Mordern_Method") 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+education <- new_data_edu %>% mutate(Any_Mordern_Method = as.numeric(Any_Mordern_Method))
+```
+
+```{r, echo=FALSE, message=FALSE}
+summary_education <- education %>% summarise(min = min(Any_Mordern_Method),
+                                  Q1 = quantile(Any_Mordern_Method,0.25),
+                                  median = median(Any_Mordern_Method),
+                                  Q3 = quantile(Any_Mordern_Method,0.75),
+                                  max = max(Any_Mordern_Method),
+                                  IQR = Q3 - Q1,
+                                  mean = mean(Any_Mordern_Method), 
+                                  sd = sd(Any_Mordern_Method), 
+                                  Small_Outliers = sum(Any_Mordern_Method < Q1 - 1.5*IQR),
+                                  Large_Outliers = sum(Any_Mordern_Method > Q3 + 1.5*IQR))
+knitr::kable(education, caption = "Summary By Education")
+```
+
+```{r fig.align="center", fig.cap=c(), echo=FALSE}
+education %>% filter(!is.na(Any_Mordern_Method)) %>% ggplot(aes(x = Education, y = Any_Mordern_Method)) + geom_point() + theme_classic()+
+  labs(x = "Levels of Education", y = "Percentage of Using Modern Contraceptive Method", title = "Figure 3: Percentage of Modern Method by Levels of Education")
+```
+Hence, from this section, we conclude that educating people that are non- schooling or primary education is the most important part; we need to let them realize the significance of birth control and how to correctly use it.  
+
+## Tribe
+The last factor was a cultural factor. Undoubtedly, the culture has impacts on peoples’ way of thinking, which potentially affects their decision on having children. In Liberia, tribes where the respondent belonged was the factor that could identify people from various backgrounds. Liberia has tribes with diverse backgrounds and living habits, we use scatter plots to compare how tribes relate to the use of contraceptive methods. Obviously, tribes truly affect the percentage of women' choices on contraception and there was a large difference between different tribes. “Grebe” and “Kru/Sapo” were the two tribes that have the greatest number of women who choose to do birth control, more than 10% of the respondents choose using contraceptive methods. The tribe “Mandingo” made a large contrast; only 1.5% of the population used contraception (Table 4). 
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+new_data_tribe <- new_data[34:42,]
+colnames(new_data_tribe) <- c("Tribe", "Any_Method", "Any_Mordern_Method") 
+```
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
+tribe <- new_data_tribe %>% filter(!is.na(Any_Mordern_Method)) %>% mutate(Any_Mordern_Method = as.numeric(Any_Mordern_Method))
+```
+
+```{r, echo=FALSE, message=FALSE}
+summary_tribe <- tribe %>% filter(!is.na(Any_Mordern_Method)) %>% summarise(min = min(Any_Mordern_Method),
+                                  Q1 = quantile(Any_Mordern_Method,0.25),
+                                  median = median(Any_Mordern_Method),
+                                  Q3 = quantile(Any_Mordern_Method,0.75),
+                                  max = max(Any_Mordern_Method),
+                                  IQR = Q3 - Q1,
+                                  mean = mean(Any_Mordern_Method), 
+                                  sd = sd(Any_Mordern_Method), 
+                                  Small_Outliers = sum(Any_Mordern_Method < Q1 - 1.5*IQR),
+                                  Large_Outliers = sum(Any_Mordern_Method > Q3 + 1.5*IQR))
+knitr::kable(tribe, caption = "Summary By Tribe")
+```
+
+```{r fig.align="center", fig.cap=c(), echo=FALSE}
+tribe %>% filter(!is.na(Any_Mordern_Method)) %>% ggplot(aes(x = Tribe, y = Any_Mordern_Method)) + geom_point() + theme_classic()+
+  labs(x = "Tribe", y = "Percentage of Using Modern Contraceptive Method", xlim = c(0,30), ylim = c(0,150), title = "Figure 4: Percentage of Using Modern Contraceptive Method by Tribe")
+```
+
+# Discussion
+The paper examines the percentage of the population that uses contraceptives and the percentage of the population that uses modern contraceptive methods. It is important to examine the amount of population that are still using traditional methods, the difference between the two percentages given in the tables. The purpose is to identify what is the relationship between the use of contraceptives and the groups identified in the paper. 
+
+## Age
+The amount of people using contraceptives for different age groups is on the rise. People used more contraceptives as they aged from 15 to 34. The distribution was bimodal with the peak at 25-29 years olds and 40-44 years olds. Both groups had more than 8% of the population using contraceptives (Figure 1). 
+
+Younger individuals, especially people who are below 20, had the lowest rate. We believe that there are two reasons that can potentially explain this. Firstly, teenagers under 20 years old tend to be more less sexually active compared to people who are older for various reasons. That contributes to the total number of people who are in need of contraceptives. Another potential factor is that teenagers have less exposure to sexual education. Their knowledge in engaging in sexual activities safely is limited compared to adults. It could be possible that teenagers are not aware of the importance of using contraceptives. However, the second reasoning is doubtable because 2% among the 2.1% of people who are using contraceptives are using safe modern methods. Only 1% of the population from 15-19 years old are using traditional methods (Table 1).  Assuming teenagers are engaged in unsafe sexual activite, the results could indicate that teenagers should realize the importance of birth control in the future. Policy makers should focus on increasing awareness on the use of effective modern birth controls among teenagers.
+
+The bimodal shape of the distribution could be explained by the fact that people tend to be more active once they age.  In their late 20s, it is more likely for someone to have a partner compared to when they were below 20 years old. This might contribute to the total amount of sexually active people in the age group and subsequently people who are using contraceptives.  The need to use contraceptives at the beginning of marriage slightly declines as people after marriages, after 35 years old. Even the 35-39 group had a lower rate of using contraceptives compared to its adjacent group, 30-34 and 40-44, only 1% used traditional methods. Moreover, the use of all contraceptives surges again when it comes to over 40 years old (Table 1). The reasoning might be that the risk of giving birth increases as age increases after 40. 
+
+Even though we can see a trend in the differences across age groups for using all methods of contraceptives, the trend of percentage of people who are using modern methods in relation to all methods is ambiguous. In other words, there is no clear pattern for people who are still using traditional methods in different age groups. 
+
+## Number of living children
+The number of children one has also contributed to their use of contraceptives. This factor has a negative correlation with the percentage of using contraceptive methods; the more children families had, the larger proportion of them will choose to use contraception. There is no clear difference between groups that used particularly more modern methods. 
+
+We believe that the reasoning behind the rising usage of contraceptive methods is associated with people's willingness to have another child. They have enough children already, and they are clearly not pursuing more children. Hence, those families choose to use birth control. Having to raise another child puts more pressure on families time wise and financial wise. The more children a family has, it is less likely that the family would want another one. We assume that families would use more birth control once they have more children. The threshold is at 4 children. The rate of contraceptives among that group peaked at 9.7%, the highest among all groups. However, on the contrary, people who have 5 children use slightly less contraceptives than those who have 4 children (Table 2).
+
+Furthermore, a notable finding in this section is that people who have no children have the lowest usage of contraceptives. Only 2.5% of people use contraceptives in this category. What is surprising is that among 2.5% of people who are using contraceptives, none of them are using traditional methods. They all had modern methods. Whether the contraceptives methods they use were effective has contributed to the fact that they do not have children can be further examined. Even if we cannot conclude on a causal relationship based on our analysis, we can say that people who do not have any children all used modern methods. Policy makers can use the information to better implement education on birth control methods in the country. 
+
+## Education 
+The paper further examined the use of birth control methods for each education level in the population. Even though the data did not segmented the groups enough, we can see a big surge in the use of contraceptives from no schooling to primary school, by 4.5%. A bigger jump to people who have higher education from primary school, an 19.5% increase. 26.8% of people who have a secondary or higher level of education used birth control (Table 3). This number is the highest percentage compared to all other percentages shown in the original graph. The education section also has the clearest trend in the change of usage compared with other variables. We can say that higher education level is correlated with more usage of contraceptives. 
+
+There are two potential reasons that can explain the high correlation. One is that people who have no schooling background are less aware of the importance of contraceptives. People with more education in school are more exposed to sexual education, usually taught in early middle school or high school. This might also explain the big jump between the usage between primary and secondary school. More laws are imposed to set a mandatory program or session during that age to let people be aware of the importance of sexual sagfety. It is possible that the low rate among people with no schooling experience did not go through a systematic sexual education program; subsequently limiting knowledge to the existence of birth control. However, this was not to say that the methods they use are less effective or less modern than the other groups. According to the results, 2.5% out of the 2.8% of the population that had no education used modern methods (Table 3). This is to show that among people who use birth control, their methods were scientifically reasonable. 
+
+Another reason that can explain higher usage of contraceptives among people with higher education is the opportunity cost of not using contraceptives. Engaging in sexual acts without protection could often lead people to pregnancy. While assuming people with higher education are correlated with higher income, the opportunity cost of bearing a child and raising one would be higher. The income is lost when people are spending time taking care of the child and during pregnancy instead of working. Not using birth control can expose people to the risk of greater loss in opportunities in their career.  To avoid the lost opportunity of earning money, more people with high educational backgrounds use more contraceptives than people who have less opportunity costs of having children.
+
+As mentioned earlier in this section, the data could be more segmented into more levels of education to further verify the correlation between usage of birth control and education level. More groups can include university, post-graduate education and other possible educations. Another way of segmenting is that the researchers can specify the years of education the respondents have recieved. It would also be interesting if they asked whether if they had a sexual education class or program in the past. We can then see if the previous potential reasoning about limited systematic sexual education among people with less education experience holds true. 
+
+## Tribes
+Since the data was collected in Sinoe and the Grand Gedeh counties, the cultural difference across different tribes may play a role in the usage of contraceptives. The cultural factors mainly influence people’s beliefs about having children and ultimately birth control. The tribes with the most common usage of contraceptives are Grebe, Kru/Sapo and Lorma, all three tribes had an usage of more than 10% of the population. Tribes with lower percentages such as Bassa, Gio, Gola and Mandigo all had a percentage of less than 5%. Among all tribes, Grebe had the highest usage and Mandigo had the lowest (Table 4). 
+
+By examining the percentage of the contraceptive methods that are considered modern, all people from Gola and Mandigo who use birth control use modern methods. No one in the two tribes are using traditional methods. They are also two tribes with the lowest usage of contraceptives in general. This indicates that the culture might be influencing how using contraceptives is common, but the method they use when they decide to use it is effective. 
+
+To further research about the reasoning behind the difference in rates among the tribes, future research  can provide more background information on the difference in belief among the tribes. They can see the attitude of people from different tribes about having children and having sex. They can also look at the average number of children per household, age of first pregnancy, age of marriage as qualitative factors. For the limitation of this paper, we only focused on the difference between tribes on whether they use modern methods.  
+
+## Limitations
+For the data collected,  only numerical values provided are the percentages.  Limited analysis can be done on two columns of percentages where one column is included in another. The ‘any method’ column includes both modern and traditional contraceptives methods. The only analysis we can perform on the data is observing differences across different characteristic groups such as age, education, etc. Moreover, we cannot examine the characteristics of the people in one category. For instance, we might be interested in seeing how many people within the category of having two kids who have no education backgrounds. Analyzing from an organized table as used in the paper as opposed to starting from the raw dataset can very much limit potential findings. 
+
+Another limitation with the data provided is that the table used in the paper does not provide a full picture. The percentages shown only provide the proportion of the entire population that uses contraceptives. Without any context, we do not know what percentage of the population are sexually active. There exists a gap where we cannot conclude on what percentage of the people who are active are using contraceptives. We can only observe the difference in the methods used among that group of people who use contraceptives. 
+
+In future research, the paper can examines the data with a broader view of the situation and connect the difference in contraceptive methods with other variables such as the percentage of the population that are sexually active, marrital status, beliefs, and other potential factors. Despite the lack of context in the research, the time when the survey was taken was 1984. The analysis can only be used to see what was the situation at that time. It cannot be representative of the population today since more methods have been developed and people’s beliefs have changed drastically. Perhaps another topic to research in the future is about how people's use of contraceptives change over time compared to today’s data. 
+
+\newpage
+
+# Appendix
+
+## Datasheet
+
+**Motivation**
+
+1. *For what purpose was the dataset created? Was there a specific task in mind? Was there a specific gap that needed to be filled? Please provide a description.*
+- The paper was created to present the findings of the Liberia Demographic and Health Survey. It was conducted under a program called Demographic and Health Surveys, designed to collect data on fertility and family planning.
+2. *Who created the dataset (for example, which team, research group) and on behalf of which entity (for example, company, institution, organization)?*
+    - The research was conducted by the Ministry of Planning and Economic Affairs in 1987. The survey was carried out with the assistance of the Institute for Resource Development.
+
+
+**Composition**
+
+1. *What do the instances that comprise the dataset represent (for example, documents, photos, people, countries)? Are there multiple types of instances (for example, movies, users, and ratings; people and interactions between them; nodes and edges)? Please provide a description.*
+	- The research has tables, figures and a map that shows and supports the findings. In additional to those, the paper also provided a background section in text, providing context for the findings. The survey questionnaires are attached in the appendix.
+2. *How many instances are there in total (of each type, if appropriate)?*
+	- There are 53 tables, 8 figures and 1 map.
+3. *Does the dataset contain all possible instances or is it a sample (not necessarily random) of instances from a larger set? If the dataset is a sample, then what is the larger set? Is the sample representative of the larger set (for example, geographic coverage)? If so, please describe how this representativeness was validated/verified. If it is not representative of the larger set, please describe why not (for example, to cover a more diverse range of instances, because instances were withheld or unavailable).*
+	- The paper contains all tables, figures and maps. The survey was conducted to the general population of Liberia, it is representative of the whole country.
+4. *What data does each instance consist of? "Raw" data (for example, unprocessed text or images) or features? In either case, please provide a description.*
+	- All data from the questionnaires are entered on to microcomputers. The tables and figures we see in the paper are all processed and properly laid out by sections. 
+5. *Is there a label or target associated with each instance? If so, please provide a description.*
+	- Yes. The paper was divided based on general topics. THe topics include: Marriage and Exposure to the risk of pregnancy, fertility, contraceptive knowledge and use, fertility preferences and mortality and health. Each instance is displayed under the corresponding sections with titles. 
+6. *Is any information missing from individual instances? If so, please provide a description, explaining why this information is missing (for example, because it was unavailable). This does not include intentionally removed information, but might include, for example, redacted text.*
+	- No
+7. *Are relationships between individual instances made explicit (for example, users' movie ratings, social network links)? If so, please describe how these relationships are made explicit.*
+	- Yes, the organization of the paper made the connection explicit. 
+8. *Are there recommended data splits (for example, training, development/validation, testing)? If so, please provide a description of these splits, explaining the rationale behind them.*
+	- No
+9. *Are there any errors, sources of noise, or redundancies in the dataset? If so, please provide a description.*
+	- The results are affected by non-sampling error and sampling error. The sampling method used was not simple random. The survey had a standard error. The non-sampling error is due to the mistakes made in carrying out field activities, such as failure to locate and interview the correct household, the way questionnaires were sked, misunderstanding of the questions etc. Non-sampling errors are impossible to eliminate. 
+10. *Is the dataset self-contained, or does it link to or otherwise rely on external resources (for example, websites, tweets, other datasets)? If it links to or relies on external resources, a) are there guarantees that they will exist, and remain constant, over time; b) are there official archival versions of the complete dataset (that is, including the external resources as they existed at the time the dataset was created); c) are there any restrictions (for example, licenses, fees) associated with any of the external resources that might apply to a dataset consumer? Please provide descriptions of all external resources and any restrictions associated with them, as well as links or other access points, as appropriate.*
+	- It is self-contained. The paper was based on the dataset they collected.
+	
+11. *Does the dataset contain data that might be considered confidential (for example, data that is protected by legal privilege or by doctor-patient confidentiality, data that includes the content of individuals' non-public communications)? If so, please provide a description.*
+	- No
+12. *Does the dataset contain data that, if viewed directly, might be offensive, insulting, threatening, or might otherwise cause anxiety? If so, please describe why.*
+	- No
+13. *Does the dataset identify any sub-populations (for example, by age, gender)? If so, please describe how these subpopulations are identified and provide a description of their respective distributions within the dataset.*
+	- The research only surveyed women in Liberia. 
+14. *Is it possible to identify individuals (that is, one or more natural persons), either directly or indirectly (that is, in combination with other data) from the dataset? If so, please describe how.*
+	- No
+15. *Does the dataset contain data that might be considered sensitive in any way (for example, data that reveals race or ethnic origins, sexual orientations, religious beliefs, political opinions or union memberships, or locations; financial or health data; biometric or genetic data; forms of government identification, such as social security numbers; criminal history)? If so, please provide a description.*
+	- No
+
+
+**Collection process**
+
+1. *How was the data associated with each instance acquired? Was the data directly observable (for example, raw text, movie ratings), reported by subjects (for example, survey responses), or indirectly inferred/derived from other data (for example, part-of-speech tags, model-based guesses for age or language)? If the data was reported by subjects or indirectly inferred/derived from other data, was the data validated/verified? If so, please describe how.*
+	- The data was collected based on survey responses of 5026 households interviewed. The raw data consisted of 5026 observations. The results were organized into the paper. The data was not inferred or derived from other data.
+2. *What mechanisms or procedures were used to collect the data (for example, hardware apparatuses or sensors, manual human curation, software programs, software APIs)? How were these mechanisms or procedures validated?*
+	- The field staff for the LDHS consisted of 24 female interviewers, 6 field editors, 6 supervisors, and one fieldwork coordinator.6 teams are formed based on major dialects to survey the entire sample. After interviews, data from the questionnaires were entered onto microcomputers at the Bureau of Statistics office in Monrovia. The data were then subjected to extensive checks for consistency and accuracy. 
+
+3. *If the dataset is a sample from a larger set, what was the sampling strategy (for example, deterministic, probabilistic with specific sampling probabilities)?*
+	- The survey was a national-survey. Every women in the country was given the survey. The response rate was 90%. 
+4. *Who was involved in the data collection process (for example, students, crowdworkers, contractors) and how were they compensated (for example, how much were crowdworkers paid)?*
+	- The field staff from the survey program was involved. 24 female interviewers, 6 field editors, 6 supervisors and 1 fieldwork coordinator. The paper did not mention the compensation. 
+5. *Over what timeframe was the data collected? Does this timeframe match the creation timeframe of the data associated with the instances (for example, recent crawl of old news articles)? If not, please describe the timeframe in which the data associated with the instances was created.*
+	- The data collection began in late February and largely completed by July 1986. 
+	
+6. *Were any ethical review processes conducted (for example, by an institutional review board)? If so, please provide a description of these review processes, including the outcomes, as well as a link or other access point to any supporting documentation.*
+	- No
+7. *Did you collect the data from the individuals in question directly, or obtain it via third parties or other sources (for example, websites)?*
+	- The data was obtained directly from the respondents.
+8. *Were the individuals in question notified about the data collection? If so, please describe (or show with screenshots or other information) how notice was provided, and provide a link or other access point to, or otherwise reproduce, the exact language of the notification itself.*
+	- Yes, they are aware of the collection. At the top of the questionnaire, there was 'I would like some information about the people who usually live in your household or are staying with you now.'
+9. *Did the individuals in question consent to the collection and use of their data? If so, please describe (or show with screenshots or other information) how consent was requested and provided, and provide a link or other access point to, or otherwise reproduce, the exact language to which the individuals consented.*
+	- By responding, they consent to give their information.
+	
+10. *If consent was obtained, were the consenting individuals provided with a mechanism to revoke their consent in the future or for certain uses? If so, please provide a description, as well as a link or other access point to the mechanism (if appropriate).*
+	- No
+11. *Has an analysis of the potential impact of the dataset and its use on data subjects (for example, a data protection impact analysis) been conducted? If so, please provide a description of this analysis, including the outcomes, as well as a link or other access point to any supporting documentation.*
+	- No
+
+
+**Preprocessing/cleaning/labeling**
+
+1. *Was any preprocessing/cleaning/labeling of the data done (for example, discretization or bucketing, tokenization, part-of-speech tagging, SIFT feature extraction, removal of instances, processing of missing values)? If so, please provide a description. If not, you may skip the remaining questions in this section.*
+	- The data processing process was not mentioned in the paper. 
+	
+2. *Was the "raw" data saved in addition to the preprocessed/cleaned/labeled data (for example, to support unanticipated future uses)? If so, please provide a link or other access point to the "raw" data.*
+	- N/A
+3. *Is the software that was used to preprocess/clean/label the data available? If so, please provide a link or other access point.*
+	- N/A
+4. *Any other comments?*
+	- N/A
+
+**Uses**
+
+1. *Has the dataset been used for any tasks already? If so, please provide a description.*
+	- No
+2. *Is there a repository that links to any or all papers or systems that use the dataset? If so, please provide a link or other access point.*
+	- No
+3. *What (other) tasks could the dataset be used for?*
+	-  The survey will also be useful in providing baseline information to the Southeast Region Primary Health Care Project (SER/PHC) for planning its program to
+motivate and educate the people in Sinoe and Grand Gedeh Counties in preventive health
+measures. 
+4. *Is there anything about the composition of the dataset or the way it was collected and preprocessed/cleaned/labeled that might impact future uses? For example, is there anything that a dataset consumer might need to know to avoid uses that could result in unfair treatment of individuals or groups (for example, stereotyping, quality of service issues) or other risks or harms (for example, legal risks, financial harms)? If so, please provide a description. Is there anything a dataset consumer could do to mitigate these risks or harms?*
+	- No
+5. *Are there tasks for which the dataset should not be used? If so, please provide a description.*
+	- No
+
+
+**Distribution**
+
+1. *Will the dataset be distributed to third parties outside of the entity (for example, company, institution, organization) on behalf of which the dataset was created? If so, please provide a description.*
+	- No
+2. *How will the dataset be distributed (for example, tarball on website, API, GitHub)? Does the dataset have a digital object identifier (DOI)?*
+	- The paper did not mention how the dataset will be distributed. The paper is accessible to the general public in many databases.
+3. *When will the dataset be distributed?*
+	- The paper did not mention when the dataset will be distributed.
+4. *Will the dataset be distributed under a copyright or other intellectual property (IP) license, and/or under applicable terms of use (ToU)? If so, please describe this license and/ or ToU, and provide a link or other access point to, or otherwise reproduce, any relevant licensing terms or ToU, as well as any fees associated with these restrictions.*
+	- N/A
+5. *Have any third parties imposed IP-based or other restrictions on the data associated with the instances? If so, please describe these restrictions, and provide a link or other access point to, or otherwise reproduce, any relevant licensing terms, as well as any fees associated with these restrictions.*
+	- No
+6. *Do any export controls or other regulatory restrictions apply to the dataset or to individual instances? If so, please describe these restrictions, and provide a link or other access point to, or otherwise reproduce, any supporting documentation.*
+	- No
+
+**Maintenance**
+
+1. *Who will be supporting/hosting/maintaining the dataset?*
+	- The survey was conducted by the Demographic and Health Surveys Program. The paper did not mention if they are going to conduct future surveys.
+2. *How can the owner/curator/manager of the dataset be contacted (for example, email address)?*
+	- Demographic and Health Surveys Program can be reached through https://dhsprogram.com/Who-We-Are/Contact-Us.cfm.
+	
+3. *Is there an erratum? If so, please provide a link or other access point.*
+	- No
+4. *Will the dataset be updated (for example, to correct labeling errors, add new instances, delete instances)? If so, please describe how often, by whom, and how updates will be communicated to dataset consumers (for example, mailing list, GitHub)?*
+	- N/A
+5. *If the dataset relates to people, are there applicable limits on the retention of the data associated with the instances (for example, were the individuals in question told that their data would be retained for a fixed period of time and then deleted)? If so, please describe these limits and explain how they will be enforced.*
+	- No
+6. *Will older versions of the dataset continue to be supported/hosted/maintained? If so, please describe how. If not, please describe how its obsolescence will be communicated to dataset consumers.*
+	- No
+7. *If others want to extend/augment/build on/contribute to the dataset, is there a mechanism for them to do so? If so, please provide a description. Will these contributions be validated/verified? If so, please describe how. If not, why not? Is there a process for communicating/distributing these contributions to dataset consumers? If so, please provide a description.*
+- They would have to contact the Demographic and Health Surveys Program.
+
+\newpage
+
+# Reference
